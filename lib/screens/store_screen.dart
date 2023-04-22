@@ -118,7 +118,9 @@ class _StoreScreenState extends State<StoreScreen> {
                             title: "5 coins",
                             btnText: "Watch Ad",
                             onClick: () {
-                              musicPlayer.musicPlayingFalse();
+                              if (musicPlayer.isMusicTurnedOn) {
+                                musicPlayer.musicPlayingFalse();
+                              }
                               _rewardedAd.show(
                                 onUserEarnedReward: (ad, reward) {
                                   coinsprovider.addCoin(5);
@@ -127,8 +129,9 @@ class _StoreScreenState extends State<StoreScreen> {
                                     _isRewardedAdLoaded = false;
                                   });
 
-                                  musicPlayer.musicPlayingTrue();
-
+                                  if (musicPlayer.isMusicTurnedOn) {
+                                    musicPlayer.musicPlayingTrue();
+                                  }
                                   loadAd();
                                 },
                               );
@@ -141,7 +144,9 @@ class _StoreScreenState extends State<StoreScreen> {
                             title: "1 heart",
                             btnText: "Watch Ad",
                             onClick: () {
-                              musicPlayer.musicPlayingFalse();
+                              if (musicPlayer.isMusicTurnedOn) {
+                                musicPlayer.musicPlayingFalse();
+                              }
                               _rewardedAd.show(
                                 onUserEarnedReward: (ad, reward) {
                                   heartProvider.addHeart(1);
@@ -149,7 +154,9 @@ class _StoreScreenState extends State<StoreScreen> {
                                   setState(() {
                                     _isRewardedAdLoaded = false;
                                   });
-                                  musicPlayer.musicPlayingTrue();
+                                  if (musicPlayer.isMusicTurnedOn) {
+                                    musicPlayer.musicPlayingTrue();
+                                  }
                                   loadAd();
                                 },
                               );
@@ -181,11 +188,11 @@ class BuyCoins extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Coming Soon!"),
-            content: Text("This feature is coming soon."),
+            title: const Text("Coming Soon!"),
+            content: const Text("This feature is coming soon."),
             actions: [
               TextButton(
-                child: Text("OK"),
+                child: const Text("OK"),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -201,11 +208,11 @@ class BuyCoins extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Coming Soon!"),
-            content: Text("This feature is coming soon."),
+            title: const Text("Coming Soon!"),
+            content: const Text("This feature is coming soon."),
             actions: [
               TextButton(
-                child: Text("OK"),
+                child: const Text("OK"),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -220,7 +227,7 @@ class BuyCoins extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Padding(
-          padding: EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8.0),
           child: _BuyItem(
             value: 1,
             price: 2,

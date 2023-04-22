@@ -122,7 +122,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
           GestureDetector(
             onTap: () {
               pauseTimer();
-              musicPlayer.musicPlayingFalse();
+              if (musicPlayer.isMusicTurnedOn) musicPlayer.musicPlayingFalse();
               _rewardedAd.show(
                 onUserEarnedReward: (ad, reward) {
                   coinsprovider.addCoin(5);
@@ -131,8 +131,10 @@ class _CountdownTimerState extends State<CountdownTimer> {
                     _isRewardedAdLoaded = false;
                   });
                   resumeTimer();
-                  musicPlayer.musicPlayingTrue();
-                  musicPlayer.quizMusicPlayingTrue();
+                  if (musicPlayer.isMusicTurnedOn) {
+                    musicPlayer.musicPlayingTrue();
+                    musicPlayer.quizMusicPlayingTrue();
+                  }
                   loadAd();
                 },
               );
@@ -218,7 +220,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
           GestureDetector(
             onTap: () {
               pauseTimer();
-              musicPlayer.musicPlayingFalse();
+              if (musicPlayer.isMusicTurnedOn) musicPlayer.musicPlayingFalse();
               _rewardedAd.show(
                 onUserEarnedReward: (ad, reward) {
                   heartProvider.addHeart(1);
@@ -227,9 +229,10 @@ class _CountdownTimerState extends State<CountdownTimer> {
                     _isRewardedAdLoaded = false;
                   });
                   resumeTimer();
-
-                  musicPlayer.musicPlayingTrue();
-                  musicPlayer.quizMusicPlayingTrue();
+                  if (musicPlayer.isMusicTurnedOn) {
+                    musicPlayer.musicPlayingTrue();
+                    musicPlayer.quizMusicPlayingTrue();
+                  }
                   loadAd();
                 },
               );
