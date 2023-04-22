@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/heart_provider.dart';
+import '../screens/home_screen.dart';
 
 class DailyLoginScreen extends StatelessWidget {
   const DailyLoginScreen({
@@ -66,6 +67,11 @@ class DailyLoginScreen extends StatelessWidget {
                 final heart =
                     Provider.of<HeartProvider>(context, listen: false);
                 heart.addHeart(5);
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (route) => false,
+                );
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black,
