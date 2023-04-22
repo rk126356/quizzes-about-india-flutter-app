@@ -66,7 +66,6 @@ class DailyLoginScreen extends StatelessWidget {
                 final heart =
                     Provider.of<HeartProvider>(context, listen: false);
                 heart.addHeart(5);
-                Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black,
