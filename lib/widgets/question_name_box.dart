@@ -158,7 +158,7 @@ class _QuestionNameBoxState extends State<QuestionNameBox> {
                               ),
                               SizedBox(width: 5),
                               Text(
-                                '+100',
+                                '+10',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
