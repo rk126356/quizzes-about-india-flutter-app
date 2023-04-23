@@ -1,12 +1,13 @@
+import 'dart:io' show Platform;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:riddle/models/questions_model.dart';
-import 'package:riddle/providers/questions_language_provider.dart';
 import 'package:riddle/providers/utils_provider.dart';
 import 'package:riddle/screens/play_screen.dart';
 import 'package:riddle/screens/store_screen.dart';
-import 'package:translator/translator.dart';
 import '../providers/answer_streak_provider.dart';
+import '../providers/daily_login_provider.dart';
 import '../providers/heart_provider.dart';
 import '../providers/questions_provider.dart';
 import '../widgets/appbar_actions_widget.dart';
@@ -124,10 +125,14 @@ class _QuizScreenState extends State<QuizScreen> {
         context: context,
         builder: (BuildContext context) {
           return HintAnswerScreen(
-            btnTitle: "Get More Coins >",
+            btnTitle: "Okay!",
             explanation: 'You don\'t have enough coins.',
             title: "Low Coins!",
+            doubleButtonTitle: "Get More Coins >",
             onNext: () {
+              Navigator.pop(context);
+            },
+            onNextDoubleButton: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const StoreScreen(),
@@ -178,10 +183,14 @@ class _QuizScreenState extends State<QuizScreen> {
         context: context,
         builder: (BuildContext context) {
           return HintAnswerScreen(
-            btnTitle: "Get More Coins >",
+            btnTitle: "Okay!",
             explanation: 'You don\'t have enough coins.',
             title: "Low Coins!",
+            doubleButtonTitle: "Get More Coins >",
             onNext: () {
+              Navigator.pop(context);
+            },
+            onNextDoubleButton: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const StoreScreen(),
@@ -234,10 +243,14 @@ class _QuizScreenState extends State<QuizScreen> {
         context: context,
         builder: (BuildContext context) {
           return HintAnswerScreen(
-            btnTitle: "Get More Coins >",
+            btnTitle: "Okay!",
             explanation: 'You don\'t have enough coins.',
             title: "Low Coins!",
+            doubleButtonTitle: "Get More Coins >",
             onNext: () {
+              Navigator.pop(context);
+            },
+            onNextDoubleButton: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const StoreScreen(),
@@ -337,33 +350,131 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
+  late RewardedAd _rewardedAd;
+  bool _isRewardedAdLoaded = false;
+
+  final String _adUnitId = Platform.isAndroid
+      ? 'ca-app-pub-3940256099942544/5224354917' // replace with your actual Ad Unit ID for Android
+      : 'ca-app-pub-3940256099942544/5224354917'; // replace with your actual Ad Unit ID for iOS
+
+  @override
+  void initState() {
+    super.initState();
+    loadAd();
+  }
+
+  @override
+  void dispose() {
+    _rewardedAd.dispose();
+    super.dispose();
+  }
+
+  void loadAd() {
+    RewardedAd.load(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          _rewardedAd = ad;
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              setState(() {
+                _isRewardedAdLoaded = false;
+              });
+            },
+          );
+          setState(() {
+            _isRewardedAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (err) {
+          print(err);
+          setState(() {
+            _isRewardedAdLoaded = false;
+          });
+        },
+      ),
+    );
+  }
+
+  void doubleRewards(bool isCoin, int value) {
+    final coin = Provider.of<CoinProvider>(context, listen: false);
+    final heart = Provider.of<HeartProvider>(context, listen: false);
+    final musicPlayer = Provider.of<UtilsProvider>(context, listen: false);
+    final adsWatched = Provider.of<DailyLoginProvider>(context, listen: false);
+
+    if (musicPlayer.isMusicTurnedOn) {
+      musicPlayer.musicPlayingFalse();
+    }
+    _rewardedAd.show(
+      onUserEarnedReward: (ad, reward) {
+        if (isCoin) {
+          coin.addCoin(value);
+        } else {
+          heart.addHearts(value);
+        }
+        adsWatched.increaseAdsWatched();
+        setState(() {
+          _isRewardedAdLoaded = false;
+        });
+
+        if (musicPlayer.isMusicTurnedOn) {
+          musicPlayer.musicPlayingTrue();
+        }
+        loadAd();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final music = Provider.of<UtilsProvider>(context, listen: false);
     final streak = Provider.of<AnswerStreakProvider>(context, listen: false);
     final coin = Provider.of<CoinProvider>(context, listen: false);
+    final heart = Provider.of<HeartProvider>(context, listen: false);
+    final adsWatched = Provider.of<DailyLoginProvider>(context, listen: false);
 
     Future<void> delayedFunction() async {
       await Future.delayed(const Duration(seconds: 1));
       if (streak.currentStrak == 3) {
-        coin.addCoin(10);
-        streak.resetCurrentStrak();
+        String currentReward = "";
+        bool isCoinIcon = false;
+        if (streak.nextReward[0] == "Coins") {
+          coin.addCoin(int.parse(streak.nextReward[1]));
+          currentReward = streak.nextReward[1];
+          isCoinIcon = true;
+        } else {
+          heart.addHearts(int.parse(streak.nextReward[1]));
+          currentReward = streak.nextReward[1];
+          isCoinIcon = false;
+        }
         // ignore: use_build_context_synchronously
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return HintAnswerScreen(
-              explanation: "You have completed the 3 strak challenge",
-              title: "WoW! 💰 + 10",
-              onNext: () {
-                Navigator.pop(context);
-              },
-              btnTitle: 'Yay!',
-            );
+                explanation: "You have completed the 3 strak challenge",
+                title: isCoinIcon
+                    ? "WoW! 💰 + $currentReward"
+                    : "WoW! ❤ + $currentReward",
+                onNext: () {
+                  Navigator.pop(context);
+                },
+                btnTitle: 'Claim!',
+                doubleButtonTitle:
+                    _isRewardedAdLoaded && adsWatched.adsWatched < 5
+                        ? isCoinIcon
+                            ? "Get 💰 + ${int.parse(currentReward) * 2} [AD]"
+                            : "Get ❤ + ${int.parse(currentReward) * 2} [AD]"
+                        : null,
+                onNextDoubleButton: () {
+                  doubleRewards(isCoinIcon, int.parse(currentReward));
+                  Navigator.pop(context);
+                });
           },
         );
+        streak.resetCurrentStrak();
       }
-      print(streak.currentStrak);
     }
 
     delayedFunction();

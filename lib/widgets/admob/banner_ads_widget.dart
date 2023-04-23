@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -51,7 +52,7 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
     return SizedBox(
       height: _isBannerAdReady ? _adSize.height.toDouble() : 0,
       child: Center(
-        child: _isBannerAdReady
+        child: _isBannerAdReady && !kIsWeb
             ? AdWidget(ad: _bannerAd)
             : const CircularProgressIndicator(
                 color: Colors.green,

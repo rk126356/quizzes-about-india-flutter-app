@@ -9,6 +9,8 @@ class HintAnswerScreen extends StatefulWidget {
   final String explanation;
   final String title;
   final String btnTitle;
+  final String? doubleButtonTitle;
+  final VoidCallback? onNextDoubleButton;
 
   const HintAnswerScreen({
     super.key,
@@ -16,6 +18,8 @@ class HintAnswerScreen extends StatefulWidget {
     required this.explanation,
     required this.title,
     required this.btnTitle,
+    this.doubleButtonTitle,
+    this.onNextDoubleButton,
   });
 
   @override
@@ -117,7 +121,7 @@ class _HintAnswerScreenState extends State<HintAnswerScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 22),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -139,7 +143,29 @@ class _HintAnswerScreenState extends State<HintAnswerScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            if (widget.doubleButtonTitle != null) const SizedBox(height: 8),
+            if (widget.doubleButtonTitle != null)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: widget.onNextDoubleButton!,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: Text(
+                    widget.doubleButtonTitle!,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

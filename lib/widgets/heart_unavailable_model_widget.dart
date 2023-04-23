@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:riddle/screens/store_screen.dart';
 import 'package:translator/translator.dart';
 
+import '../providers/daily_login_provider.dart';
 import '../providers/questions_language_provider.dart';
 
 class HeartUnavailableScreen extends StatefulWidget {
@@ -15,7 +16,7 @@ class HeartUnavailableScreen extends StatefulWidget {
 }
 
 class _HeartUnavailableScreenState extends State<HeartUnavailableScreen> {
-  String des = 'Sorry, no hearts left. You will get 5 hearts per day for FREE.';
+  String des = 'Sorry, no hearts left. You will get 5 hearts after:';
   String title = 'Hearts Unavailable';
   int translatrdQuestionNo = 0;
 
@@ -23,6 +24,7 @@ class _HeartUnavailableScreenState extends State<HeartUnavailableScreen> {
   Widget build(BuildContext context) {
     final qLanguage =
         Provider.of<QuestionsLanguageProvider>(context, listen: false);
+    final dailyLogin = Provider.of<DailyLoginProvider>(context);
     final translator = GoogleTranslator();
 
     void translateQ() {
@@ -108,7 +110,7 @@ class _HeartUnavailableScreenState extends State<HeartUnavailableScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    des,
+                    "$des ${dailyLogin.timeLeft.inHours.remainder(24).toString().padLeft(2, '0')}:${(dailyLogin.timeLeft.inMinutes.remainder(60)).toString().padLeft(2, '0')}:${(dailyLogin.timeLeft.inSeconds.remainder(60)).toString().padLeft(2, '0')}",
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 20,
