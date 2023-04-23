@@ -141,7 +141,7 @@ class _QuestionNameBoxState extends State<QuestionNameBox> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Streak ${streak.currentStrak}/3',
+                            'Correct ${streak.currentStrak}/3',
                             style: const TextStyle(
                               fontSize: 14,
                               color: Colors.white,
@@ -150,16 +150,18 @@ class _QuestionNameBoxState extends State<QuestionNameBox> {
                             ),
                           ),
                           Row(
-                            children: const [
+                            children: [
                               Icon(
-                                Icons.monetization_on,
+                                streak.nextReward[0] == "Coins"
+                                    ? Icons.monetization_on
+                                    : Icons.favorite,
                                 color: Colors.white,
                                 size: 20,
                               ),
-                              SizedBox(width: 5),
+                              const SizedBox(width: 5),
                               Text(
-                                '+100',
-                                style: TextStyle(
+                                '+${streak.nextReward[1]}',
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -176,9 +178,9 @@ class _QuestionNameBoxState extends State<QuestionNameBox> {
               ),
           ],
         ),
-        if (!hasInternet && qLanguage.language != "en")
+        if (!hasInternet && qLanguage.language != 'en')
           Positioned(
-            bottom: 4.5,
+            bottom: !widget.widget.questions[0].isCompleted ? 48 : 12,
             right: 3.5,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),

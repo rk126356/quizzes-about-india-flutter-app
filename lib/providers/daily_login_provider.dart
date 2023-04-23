@@ -84,7 +84,7 @@ class DailyLoginProvider with ChangeNotifier {
   }
 
   void _startTimer() {
-    _timeLeft = const Duration(hours: 24) - _getTimeSinceLastLogin();
+    _timeLeft = const Duration(hours: 18) - _getTimeSinceLastLogin();
     if (_timeLeft.isNegative) {
       _timeLeft = Duration.zero;
     } else {
