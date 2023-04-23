@@ -1,5 +1,6 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:language_picker/language_picker_dialog.dart';
 import 'package:language_picker/languages.dart';
@@ -125,16 +126,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      bottomNavigationBar: Container(
-          child: !hasInternet && languageProvider.language != "en"
-              ? const Text(
-                  "You will need internet connection \n to translate the Quizzes.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.w200))
-              : const BannerAdWidget()),
+      bottomNavigationBar: kIsWeb
+          ? null
+          : Container(
+              child: !hasInternet && languageProvider.language != "en"
+                  ? const Text(
+                      "You will need internet connection \n to translate the Quizzes.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w200))
+                  : const BannerAdWidget()),
       appBar: AppBar(
         elevation: 2,
         title: const Text(

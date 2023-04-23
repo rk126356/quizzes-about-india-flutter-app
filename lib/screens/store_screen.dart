@@ -91,7 +91,7 @@ class _StoreScreenState extends State<StoreScreen> {
           ),
           child: Column(
             children: [
-              if (_isRewardedAdLoaded && adsWatched.adsWatched < 100)
+              if (_isRewardedAdLoaded && adsWatched.adsWatched < 5)
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

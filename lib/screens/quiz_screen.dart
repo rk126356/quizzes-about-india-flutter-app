@@ -404,7 +404,7 @@ class _QuizScreenState extends State<QuizScreen> {
     final adsWatched = Provider.of<DailyLoginProvider>(context, listen: false);
 
     if (musicPlayer.isMusicTurnedOn) {
-      musicPlayer.musicPlayingFalse();
+      musicPlayer.quizMusicPlayingFalse();
     }
     _rewardedAd.show(
       onUserEarnedReward: (ad, reward) {
@@ -419,7 +419,7 @@ class _QuizScreenState extends State<QuizScreen> {
         });
 
         if (musicPlayer.isMusicTurnedOn) {
-          musicPlayer.musicPlayingTrue();
+          musicPlayer.quizMusicPlayingTrue();
         }
         loadAd();
       },
@@ -460,12 +460,14 @@ class _QuizScreenState extends State<QuizScreen> {
                 onNext: () {
                   Navigator.pop(context);
                 },
-                btnTitle: 'Claim!',
+                btnTitle: isCoinIcon
+                    ? "Claim 💰 +$currentReward"
+                    : "Claim ❤ +$currentReward",
                 doubleButtonTitle:
                     _isRewardedAdLoaded && adsWatched.adsWatched < 5
                         ? isCoinIcon
-                            ? "Get 💰 + ${int.parse(currentReward) * 2} [AD]"
-                            : "Get ❤ + ${int.parse(currentReward) * 2} [AD]"
+                            ? "Claim 💰 +${int.parse(currentReward) * 2} [AD]"
+                            : "Claim ❤ +${int.parse(currentReward) * 2} [AD]"
                         : null,
                 onNextDoubleButton: () {
                   doubleRewards(isCoinIcon, int.parse(currentReward));
