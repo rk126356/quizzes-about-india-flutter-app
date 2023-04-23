@@ -118,7 +118,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
           ? MainAxisAlignment.spaceBetween
           : MainAxisAlignment.center,
       children: [
-        if (_isRewardedAdLoaded && adsWatched.adsWatched < 999)
+        if (_isRewardedAdLoaded && adsWatched.adsWatched < 5)
           GestureDetector(
             onTap: () {
               pauseTimer();
@@ -216,7 +216,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
             ],
           ),
         ),
-        if (_isRewardedAdLoaded && adsWatched.adsWatched < 999)
+        if (_isRewardedAdLoaded && adsWatched.adsWatched < 5)
           GestureDetector(
             onTap: () {
               pauseTimer();

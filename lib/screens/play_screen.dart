@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:riddle/providers/questions_language_provider.dart';
@@ -49,16 +50,18 @@ class _PlayScreenState extends State<PlayScreen> {
     final language = Provider.of<QuestionsLanguageProvider>(context);
 
     return Scaffold(
-      bottomNavigationBar: Container(
-          child: !hasInternet && language.language != "en"
-              ? const Text(
-                  "You will need internet connection \n to translate the Quizzes.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.w200))
-              : const BannerAdWidget()),
+      bottomNavigationBar: kIsWeb
+          ? null
+          : Container(
+              child: !hasInternet && language.language != "en"
+                  ? const Text(
+                      "You will need internet connection \n to translate the Quizzes.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.w200))
+                  : const BannerAdWidget()),
       appBar: AppBar(
         title: const Text('Play'),
         leading: GestureDetector(
