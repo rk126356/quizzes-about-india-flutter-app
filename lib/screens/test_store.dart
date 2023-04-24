@@ -1,14 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-
-const Set<String> _kProductIds = {
-  'coins_100_india_quiz',
-  'coins_500_india_quiz',
-  'coins_1500_india_quiz',
-  'coins_3000_india_quiz',
-};
 
 class TestStore extends StatefulWidget {
   const TestStore({Key? key}) : super(key: key);
@@ -18,46 +12,134 @@ class TestStore extends StatefulWidget {
 }
 
 class _TestStoreState extends State<TestStore> {
+  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
   late StreamSubscription<List<PurchaseDetails>> _subscription;
+  List<ProductDetails> _products = <ProductDetails>[];
+
+  final _productIdList = [
+    '100_coins_india_quiz',
+    '500_coins_india_quiz',
+    '1500_coins_india_quiz',
+    '3000_coins_india_quiz',
+    '10_hearts_india_quiz',
+    '150_hearts_india_quiz',
+    '150_hearts_india_quiz',
+    '300_hearts_india_quiz',
+  ];
+
+  String? _queryProductError = "";
+
+  bool _isAvailable = false;
+
+  List<String> _notFoundIds = <String>[];
+
+  bool _loading = true;
+
+  bool _purchasePending = true;
 
   @override
   void initState() {
-    super.initState();
     final Stream<List<PurchaseDetails>> purchaseUpdated =
-        InAppPurchase.instance.purchaseStream;
+        _inAppPurchase.purchaseStream;
     _subscription = purchaseUpdated.listen((purchaseDetailsList) {
       _listenToPurchaseUpdated(purchaseDetailsList);
     }, onDone: () {
       _subscription.cancel();
-    }, onError: (error) {
-      // handle error here.
-      print("error");
+    }, onError: (Object e) {
+      debugPrint("error :${e.toString()}");
     });
-    _initialize();
+
+    initStoreInfo();
+    super.initState();
   }
 
-  Future<void> _initialize() async {
-    final bool isAvailable = await InAppPurchase.instance.isAvailable();
+  Future<void> initStoreInfo() async {
+    final bool isAvailable = await _inAppPurchase.isAvailable();
     if (!isAvailable) {
-      // The store cannot be reached or accessed, handle the error.
-      print("error");
+      setState(() {
+        _isAvailable = isAvailable;
+        _products = <ProductDetails>[];
+        _notFoundIds = <String>[];
+        _loading = false;
+      });
       return;
     }
-    final ProductDetailsResponse productDetailsResponse =
-        await InAppPurchase.instance.queryProductDetails(_kProductIds);
-    if (productDetailsResponse.error != null) {
-      // Handle the error.
-      print("error");
+
+    final ProductDetailsResponse productDetailResponse =
+        await _inAppPurchase.queryProductDetails(_productIdList.toSet());
+    if (productDetailResponse.error != null) {
+      setState(() {
+        _queryProductError = productDetailResponse.error!.message;
+        _isAvailable = isAvailable;
+        _products = productDetailResponse.productDetails;
+        _notFoundIds = productDetailResponse.notFoundIDs;
+        print('_notFoundIds :: ${_notFoundIds.toList()}');
+        _loading = false;
+      });
       return;
     }
-    final List<ProductDetails> products = productDetailsResponse.productDetails;
-    for (var product in products) {
-      // You can save the product details here
-      print('Product ID: ${product.id}');
-      print('Product title: ${product.title}');
-      print('Product description: ${product.description}');
-      print('Product price: ${product.price}');
+
+    if (productDetailResponse.productDetails.isEmpty) {
+      setState(() {
+        _queryProductError = null;
+        _isAvailable = isAvailable;
+        _products = productDetailResponse.productDetails;
+        _notFoundIds = productDetailResponse.notFoundIDs;
+        print("Products details empty");
+        print('_notFoundIds : ${_notFoundIds.toList()}');
+        print('productDetailResponse error :: ${productDetailResponse.error}');
+        _loading = false;
+      });
+      return;
     }
+
+    setState(() {
+      _products = productDetailResponse.productDetails;
+      _notFoundIds = productDetailResponse.notFoundIDs;
+      _isAvailable = isAvailable;
+      print('_notFoundIds : ${_notFoundIds.toList()}');
+      _loading = false;
+    });
+  }
+
+  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
+    purchaseDetailsList.forEach((purchaseDetails) async {
+      if (purchaseDetails.status == PurchaseStatus.pending) {
+        setState(() {
+          _purchasePending = true;
+        });
+      } else {
+        setState(() {
+          _purchasePending = false;
+        });
+        if (purchaseDetails.status == PurchaseStatus.error) {
+          showSnackBar('Purchase Error');
+        } else if (purchaseDetails.status == PurchaseStatus.purchased) {
+          bool validPurchase = await _verifyPurchase(purchaseDetails);
+          if (validPurchase) {
+            showSnackBar('Purchase Success');
+            await _inAppPurchase.completePurchase(purchaseDetails);
+          } else {
+            showSnackBar('Invalid Purchase');
+            await _inAppPurchase.completePurchase(purchaseDetails);
+          }
+        }
+      }
+    });
+  }
+
+  Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) async {
+// TODO: Implement server-side validation of the purchase.
+    return true;
+  }
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(milliseconds: 1500),
+      ),
+    );
   }
 
   @override
@@ -66,38 +148,53 @@ class _TestStoreState extends State<TestStore> {
     super.dispose();
   }
 
-  void _listenToPurchaseUpdated(
-      List<PurchaseDetails> purchaseDetailsList) async {
-    for (PurchaseDetails purchaseDetails in purchaseDetailsList) {
-      if (purchaseDetails.status == PurchaseStatus.pending) {
-        // show pending dialog
-      } else {
-        if (purchaseDetails.status == PurchaseStatus.error) {
-          // handle error here.
-        } else if (purchaseDetails.status == PurchaseStatus.purchased) {
-          // handle success here.
-          // _consumeProduct(purchaseDetails);
-        }
-        if (purchaseDetails.pendingCompletePurchase) {
-          await InAppPurchase.instance.completePurchase(purchaseDetails);
-        }
-      }
-    }
-  }
-
-  // Future<void> _consumeProduct(PurchaseDetails purchase) async {
-  //   if (purchase.status == PurchaseStatus.purchased) {
-  //     await InAppPurchase.instance.consumePurchase(purchase);
-  //   }
-  // }
-
-  Future<void> _buyProduct(ProductDetails product) async {
-    final PurchaseParam purchaseParam = PurchaseParam(productDetails: product);
-    await InAppPurchase.instance.buyConsumable(purchaseParam: purchaseParam);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Test Store"),
+      ),
+      body: Container(
+        padding: const EdgeInsets.all(20),
+        child: _loading
+            ? const CircularProgressIndicator()
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Products:',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: ListView(
+                      children: _products.map((product) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: ListTile(
+                            title: Text(product.title),
+                            subtitle: Text(product.description),
+                            trailing: ElevatedButton(
+                              onPressed: () async {
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: product);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                              child: Text(product.price),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
   }
 }
