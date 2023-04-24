@@ -7,13 +7,19 @@ class PositionedButtons extends StatelessWidget {
   final VoidCallback? onCompletedViewPressed;
   final VoidCallback? onCompletedSkipPressed;
   final bool isCompleted;
+  final bool isHintShowed;
+  final bool isAnswerShowed;
+  final bool isSkipped;
 
   const PositionedButtons(
       {Key? key,
       this.onSkipPressed,
       this.onHintPressed,
       this.onViewPressed,
+      required this.isAnswerShowed,
+      required this.isHintShowed,
       required this.isCompleted,
+      required this.isSkipped,
       this.onCompletedSkipPressed,
       this.onCompletedViewPressed})
       : super(key: key);
@@ -49,9 +55,9 @@ class PositionedButtons extends StatelessWidget {
               else
                 _PositionedBtn(
                   onPressed: onSkipPressed,
-                  title: "Skip",
+                  title: isSkipped ? "Next" : "Skip",
                   iconName: Icons.skip_next,
-                  cost: "10",
+                  cost: isSkipped ? "0" : "10",
                 ),
               if (isCompleted)
                 _CompletedBtn(
@@ -63,14 +69,14 @@ class PositionedButtons extends StatelessWidget {
                   onPressed: onHintPressed,
                   title: "Hint",
                   iconName: Icons.help_outline,
-                  cost: "20",
+                  cost: isHintShowed ? "FREE" : "20",
                 ),
               if (!isCompleted)
                 _PositionedBtn(
                   onPressed: onViewPressed,
                   title: "View",
                   iconName: Icons.visibility_outlined,
-                  cost: "30",
+                  cost: isAnswerShowed ? "FREE" : "30",
                 ),
             ],
           ),

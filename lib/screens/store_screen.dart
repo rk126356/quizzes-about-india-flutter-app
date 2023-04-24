@@ -19,6 +19,12 @@ class StoreScreen extends StatefulWidget {
 class _StoreScreenState extends State<StoreScreen> {
   late RewardedAd _rewardedAd;
   bool _isRewardedAdLoaded = false;
+  final _productIds = {
+    'coins_100_india_quiz',
+    'coins_500_india_quiz',
+    'coins_1500_india_quiz',
+    'coins_3000_india_quiz'
+  };
 
   final String _adUnitId = Platform.isAndroid
       ? 'ca-app-pub-3940256099942544/5224354917' // replace with your actual Ad Unit ID for Android

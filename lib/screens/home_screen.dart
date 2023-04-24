@@ -10,6 +10,7 @@ import 'package:riddle/providers/questions_language_provider.dart';
 import 'package:riddle/screens/play_screen.dart';
 import 'package:riddle/screens/settings_screen.dart';
 import 'package:riddle/screens/store_screen.dart';
+import 'package:riddle/screens/test_store.dart';
 import 'package:riddle/widgets/daily_login_model_widget.dart';
 import '../widgets/admob/banner_ads_widget.dart';
 import '../widgets/appbar_actions_widget.dart';
@@ -180,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const CustomButton(
                 label: 'Store',
                 icon: Icons.shop,
-                route: StoreScreen(),
+                route: TestStore(),
               ),
               const SizedBox(height: 16.0),
               ElevatedButton.icon(
