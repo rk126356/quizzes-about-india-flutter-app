@@ -71,13 +71,6 @@ class _CountdownTimerState extends State<CountdownTimer> {
     });
   }
 
-  @override
-  void dispose() {
-    _timer.cancel();
-    _rewardedAd.dispose();
-    super.dispose();
-  }
-
   void loadAd() {
     RewardedAd.load(
       adUnitId: _adUnitId,
@@ -278,5 +271,12 @@ class _CountdownTimerState extends State<CountdownTimer> {
           ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    _rewardedAd.dispose();
+    super.dispose();
   }
 }

@@ -49,48 +49,58 @@ class _PlayScreenState extends State<PlayScreen> {
         questionsProvider.questionsList.map((question) => [question]).toList();
     final language = Provider.of<QuestionsLanguageProvider>(context);
 
-    return Scaffold(
-      bottomNavigationBar: kIsWeb
-          ? null
-          : Container(
-              child: !hasInternet && language.language != "en"
-                  ? const Text(
-                      "You will need internet connection \n to translate the Quizzes.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 18.0,
-                          fontWeight: FontWeight.w200))
-                  : const BannerAdWidget()),
-      appBar: AppBar(
-        title: const Text('Play'),
-        leading: GestureDetector(
-          onTap: () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const HomeScreen()),
-              (route) => false,
-            );
-          },
-          child: const Icon(Icons.arrow_back),
-        ),
-        actions: const [
-          AppBarActions(),
-        ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.orange,
-              Colors.white,
-              Colors.green,
-            ],
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
+        );
+        return true;
+      },
+      child: Scaffold(
+        bottomNavigationBar: kIsWeb
+            ? null
+            : Container(
+                child: !hasInternet && language.language != "en"
+                    ? const Text(
+                        "You will need internet connection \n to translate the Quizzes.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.w200))
+                    : const BannerAdWidget()),
+        appBar: AppBar(
+          title: const Text('Play'),
+          leading: GestureDetector(
+            onTap: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+            child: const Icon(Icons.arrow_back),
           ),
+          actions: const [
+            AppBarActions(),
+          ],
         ),
-        child: LevelGridView(levels: levels),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.orange,
+                Colors.white,
+                Colors.green,
+              ],
+            ),
+          ),
+          child: LevelGridView(levels: levels),
+        ),
       ),
     );
   }

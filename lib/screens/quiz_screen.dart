@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:riddle/models/questions_model.dart';
@@ -42,7 +43,7 @@ class QuizScreen extends StatefulWidget {
 class _QuizScreenState extends State<QuizScreen> {
   void handleCompletedSkipPressed() {
     if (questionsList.length != widget.itemNo) {
-      Navigator.pushAndRemoveUntil(
+      Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => QuizScreen(
@@ -50,7 +51,6 @@ class _QuizScreenState extends State<QuizScreen> {
                   questions: widget.level[widget.itemNo],
                   level: widget.level,
                 )),
-        (route) => false,
       );
     } else {
       Navigator.of(context).push(
@@ -84,6 +84,33 @@ class _QuizScreenState extends State<QuizScreen> {
         Provider.of<QuestionsProvider>(context, listen: false);
     final sound = Provider.of<UtilsProvider>(context, listen: false);
 
+    if (widget.questions[0].isSkipped) {
+      if (sound.isSounsPlaying) {
+        final player = AudioPlayer();
+        player.play(AssetSource('audio/skip1.mp3'));
+      }
+      if (questionsList.length != widget.itemNo) {
+        questionsProvider.markQuestionUnlocked(widget.itemNo);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => QuizScreen(
+                    itemNo: widget.itemNo + 1,
+                    questions: widget.level[widget.itemNo],
+                    level: widget.level,
+                  )),
+        );
+      } else {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const PlayScreen(),
+          ),
+        );
+      }
+      return;
+    }
+
     if (heartProvider.hearts <= 0) {
       showDialog(
         context: context,
@@ -103,7 +130,7 @@ class _QuizScreenState extends State<QuizScreen> {
       if (questionsList.length != widget.itemNo) {
         questionsProvider.markQuestionUnlocked(widget.itemNo);
 
-        Navigator.pushAndRemoveUntil(
+        Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => QuizScreen(
@@ -111,7 +138,6 @@ class _QuizScreenState extends State<QuizScreen> {
                     questions: widget.level[widget.itemNo],
                     level: widget.level,
                   )),
-          (route) => false,
         );
       } else {
         Navigator.of(context).push(
@@ -120,6 +146,7 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
         );
       }
+      widget.questions[0].isSkipped = true;
     } else {
       showDialog(
         context: context,
@@ -149,6 +176,28 @@ class _QuizScreenState extends State<QuizScreen> {
     final heartProvider = Provider.of<HeartProvider>(context, listen: false);
     final coinProvider = Provider.of<CoinProvider>(context, listen: false);
     final sound = Provider.of<UtilsProvider>(context, listen: false);
+
+    if (widget.questions[0].isHintShowed) {
+      if (sound.isSounsPlaying) {
+        final player = AudioPlayer();
+        player.play(AssetSource('audio/hint1.mp3'));
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return HintAnswerScreen(
+            btnTitle: "Thanks!",
+            explanation: widget.questions[0].hint,
+            title: "Hint",
+            onNext: () {
+              Navigator.pop(context);
+            },
+          );
+        },
+      );
+      return;
+    }
+
     if (heartProvider.hearts <= 0) {
       showDialog(
         context: context,
@@ -178,6 +227,7 @@ class _QuizScreenState extends State<QuizScreen> {
           );
         },
       );
+      widget.questions[0].isHintShowed = true;
     } else {
       showDialog(
         context: context,
@@ -207,6 +257,27 @@ class _QuizScreenState extends State<QuizScreen> {
     final heartProvider = Provider.of<HeartProvider>(context, listen: false);
     final coinProvider = Provider.of<CoinProvider>(context, listen: false);
     final sound = Provider.of<UtilsProvider>(context, listen: false);
+
+    if (widget.questions[0].isAnswerShowed) {
+      if (sound.isSounsPlaying) {
+        final player = AudioPlayer();
+        player.play(AssetSource('audio/ans1.mp3'));
+      }
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return HintAnswerScreen(
+            btnTitle: "Thanks!",
+            explanation: widget.questions[0].answer,
+            title: "Answer",
+            onNext: () {
+              Navigator.pop(context);
+            },
+          );
+        },
+      );
+      return;
+    }
 
     if (heartProvider.hearts <= 0) {
       showDialog(
@@ -238,6 +309,7 @@ class _QuizScreenState extends State<QuizScreen> {
           );
         },
       );
+      widget.questions[0].isAnswerShowed = true;
     } else {
       showDialog(
         context: context,
@@ -296,7 +368,7 @@ class _QuizScreenState extends State<QuizScreen> {
             return CorrectAnswerScreen(
               explanation: widget.questions[0].explanation,
               onNext: () {
-                Navigator.pushAndRemoveUntil(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                       builder: (context) => QuizScreen(
@@ -304,7 +376,6 @@ class _QuizScreenState extends State<QuizScreen> {
                             questions: widget.level[widget.itemNo],
                             level: widget.level,
                           )),
-                  (route) => false,
                 );
               },
             );
@@ -388,7 +459,9 @@ class _QuizScreenState extends State<QuizScreen> {
           });
         },
         onAdFailedToLoad: (err) {
-          print(err);
+          if (kDebugMode) {
+            print(err);
+          }
           setState(() {
             _isRewardedAdLoaded = false;
           });
@@ -491,6 +564,11 @@ class _QuizScreenState extends State<QuizScreen> {
           music.stopQuizMusic();
           music.quizMusicPlayingFalse();
         }
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const PlayScreen()),
+          (route) => false,
+        );
         return true;
       },
       child: Scaffold(
@@ -537,7 +615,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           height: MediaQuery.of(context).size.height * 0.02),
                       Center(
                         child: CountdownTimer(
-                          duration: 200,
+                          duration: 150,
                           onFinished: () {
                             if (music.isSounsPlaying) {
                               final player = AudioPlayer();
@@ -555,7 +633,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                       "The timer has finished, please try again.",
                                   title: "Opps! ❤ - 1",
                                   onNext: () {
-                                    Navigator.pushAndRemoveUntil(
+                                    Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => QuizScreen(
@@ -564,7 +642,6 @@ class _QuizScreenState extends State<QuizScreen> {
                                                     .level[widget.itemNo - 1],
                                                 level: widget.level,
                                               )),
-                                      (route) => false,
                                     );
                                   },
                                 );
@@ -608,6 +685,9 @@ class _QuizScreenState extends State<QuizScreen> {
               onCompletedSkipPressed: handleCompletedSkipPressed,
               onCompletedViewPressed: handleCompletedViewPressed,
               isCompleted: widget.questions[0].isCompleted,
+              isAnswerShowed: widget.questions[0].isAnswerShowed,
+              isHintShowed: widget.questions[0].isHintShowed,
+              isSkipped: widget.questions[0].isSkipped,
             )
           ],
         ),

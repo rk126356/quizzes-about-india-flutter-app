@@ -6,6 +6,9 @@ class Question {
   bool isUnlocked;
   final String hint;
   final String explanation;
+  bool isHintShowed;
+  bool isAnswerShowed;
+  bool isSkipped;
 
   Question({
     required this.question,
@@ -13,6 +16,9 @@ class Question {
     required this.answer,
     this.isCompleted = false,
     this.isUnlocked = false,
+    this.isHintShowed = false,
+    this.isAnswerShowed = false,
+    this.isSkipped = false,
     required this.hint,
     required this.explanation,
   });

@@ -28,12 +28,9 @@ class AppBarActions extends StatelessWidget {
       if (music.isMusicTurnedOn && music.isQuizMusicPlaying) {
         music.stopMusic();
         music.playQuizMusic();
-        print("Quiz music is playing");
       } else if (music.isMusicTurnedOn && !music.isQuizMusicPlaying) {
-        print("Music is turned on");
         music.playMusic();
       } else if (!music.isMusicTurnedOn) {
-        print("Music is turned off");
         music.stopMusic();
         music.stopQuizMusic();
       }
