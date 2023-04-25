@@ -73,7 +73,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         );
 
-    final languageProvider = Provider.of<QuestionsLanguageProvider>(context);
+    final languageProvider =
+        Provider.of<QuestionsLanguageProvider>(context, listen: false);
 
     void openLanguagePickerDialog() {
       showDialog(
@@ -181,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const CustomButton(
                 label: 'Store',
                 icon: Icons.shop,
-                route: TestStore(),
+                route: StoreScreen(),
               ),
               const SizedBox(height: 16.0),
               ElevatedButton.icon(

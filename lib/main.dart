@@ -5,6 +5,7 @@ import 'package:riddle/providers/answer_streak_provider.dart';
 import 'package:riddle/providers/coin_provider.dart';
 import 'package:riddle/providers/daily_login_provider.dart';
 import 'package:riddle/providers/heart_provider.dart';
+import 'package:riddle/providers/purchase_value_provider.dart';
 import 'package:riddle/providers/questions_language_provider.dart';
 import 'package:riddle/providers/questions_provider.dart';
 import 'package:riddle/providers/utils_provider.dart';
@@ -25,6 +26,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => UtilsProvider()),
         ChangeNotifierProvider(create: (_) => QuestionsLanguageProvider()),
         ChangeNotifierProvider(create: (_) => AnswerStreakProvider()),
+        ChangeNotifierProvider(create: (_) => PurchaseValueProvider()),
       ],
       child: const MyApp(),
     ),

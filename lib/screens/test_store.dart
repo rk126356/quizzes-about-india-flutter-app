@@ -22,7 +22,7 @@ class _TestStoreState extends State<TestStore> {
     '1500_coins_india_quiz',
     '3000_coins_india_quiz',
     '10_hearts_india_quiz',
-    '150_hearts_india_quiz',
+    '50_hearts_india_quiz',
     '150_hearts_india_quiz',
     '300_hearts_india_quiz',
   ];
