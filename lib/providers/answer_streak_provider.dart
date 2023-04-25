@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -6,9 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AnswerStreakProvider with ChangeNotifier {
   int _currentStrak = 0;
   get currentStrak => _currentStrak;
+  late Timer _timer = Timer.periodic(Duration(seconds: 1), (timer) {});
 
   List<String> _nextReward = ["Coins", "10"];
   get nextReward => _nextReward;
+  Timer get timer => _timer;
+
+  set timer(Timer timer) => _timer;
 
   AnswerStreakProvider() {
     _loadFromPrefs();

@@ -7,7 +7,7 @@ class PurchaseValueProvider with ChangeNotifier {
   bool _purchasePending = false;
 
   PurchaseValueProvider() {
-    _loadFromPrefs();
+    // _loadFromPrefs();
   }
 
   int get currentValue => _currentValue;
@@ -16,14 +16,14 @@ class PurchaseValueProvider with ChangeNotifier {
 
   void setPurchasePending(bool purchasePending) {
     _purchasePending = purchasePending;
-    _saveToPrefs();
+    // _saveToPrefs();
     notifyListeners();
   }
 
   void setCurrentValue(String name, int value) {
     _currentValue = value;
     _itemName = name;
-    _saveToPrefs();
+    // _saveToPrefs();
     notifyListeners();
   }
 

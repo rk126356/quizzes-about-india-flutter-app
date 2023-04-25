@@ -10,6 +10,8 @@ import '../providers/coin_provider.dart';
 import '../providers/daily_login_provider.dart';
 import '../providers/heart_provider.dart';
 
+Timer? timer;
+
 class CountdownTimer extends StatefulWidget {
   final int duration;
   final VoidCallback onFinished;
@@ -24,7 +26,6 @@ class CountdownTimer extends StatefulWidget {
 }
 
 class _CountdownTimerState extends State<CountdownTimer> {
-  late Timer _timer;
   int _timeRemaining = 0;
   late RewardedAd _rewardedAd;
   bool _isRewardedAdLoaded = false;
@@ -42,12 +43,12 @@ class _CountdownTimerState extends State<CountdownTimer> {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_timeRemaining > 0) {
           _timeRemaining--;
         } else {
-          _timer.cancel();
+          timer!.cancel();
           widget.onFinished();
         }
       });
@@ -55,16 +56,16 @@ class _CountdownTimerState extends State<CountdownTimer> {
   }
 
   void pauseTimer() {
-    _timer.cancel();
+    timer!.cancel();
   }
 
   void resumeTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_timeRemaining > 0) {
           _timeRemaining--;
         } else {
-          _timer.cancel();
+          timer!.cancel();
           widget.onFinished();
         }
       });
@@ -275,7 +276,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
 
   @override
   void dispose() {
-    _timer.cancel();
+    timer!.cancel();
     _rewardedAd.dispose();
     super.dispose();
   }

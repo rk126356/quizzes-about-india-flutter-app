@@ -78,6 +78,7 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void handleSkipButtonPress() {
+    timer!.cancel();
     final heartProvider = Provider.of<HeartProvider>(context, listen: false);
     final coinProvider = Provider.of<CoinProvider>(context, listen: false);
     final questionsProvider =
@@ -350,6 +351,7 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     if (choice == widget.questions[0].answer) {
+      timer!.cancel();
       if (!widget.questions[0].isCompleted) streak.increaseCurrentStrak();
 
       if (sound.isSounsPlaying) {
@@ -437,6 +439,7 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   void dispose() {
     _rewardedAd.dispose();
+    timer!.cancel();
     super.dispose();
   }
 
@@ -615,7 +618,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           height: MediaQuery.of(context).size.height * 0.02),
                       Center(
                         child: CountdownTimer(
-                          duration: 150,
+                          duration: 120,
                           onFinished: () {
                             if (music.isSounsPlaying) {
                               final player = AudioPlayer();
