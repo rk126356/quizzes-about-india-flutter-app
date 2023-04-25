@@ -4,12 +4,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HeartProvider with ChangeNotifier {
   int _hearts = 0;
   static const String _heartsKey = 'hearts';
+  bool _shouldTimerStop = false;
 
   HeartProvider() {
     _loadData();
   }
 
   int get hearts => _hearts;
+  bool get shouldTimerStop => _shouldTimerStop;
+
+  void changeTimerStop(bool value) {
+    _shouldTimerStop = value;
+  }
 
   void addHeart(int value) {
     _hearts += value;
