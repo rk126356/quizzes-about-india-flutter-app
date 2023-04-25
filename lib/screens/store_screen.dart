@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:provider/provider.dart';
 import 'package:riddle/providers/heart_provider.dart';
 import '../providers/coin_provider.dart';
 import '../providers/daily_login_provider.dart';
+import '../providers/purchase_value_provider.dart';
 import '../providers/utils_provider.dart';
 import '../widgets/appbar_actions_widget.dart';
 
@@ -19,25 +23,165 @@ class StoreScreen extends StatefulWidget {
 class _StoreScreenState extends State<StoreScreen> {
   late RewardedAd _rewardedAd;
   bool _isRewardedAdLoaded = false;
-  final _productIds = {
-    'coins_100_india_quiz',
-    'coins_500_india_quiz',
-    'coins_1500_india_quiz',
-    'coins_3000_india_quiz'
-  };
+  bool hasInternet = false;
 
   final String _adUnitId = Platform.isAndroid
       ? 'ca-app-pub-3940256099942544/5224354917' // replace with your actual Ad Unit ID for Android
       : 'ca-app-pub-3940256099942544/5224354917'; // replace with your actual Ad Unit ID for iOS
 
+  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
+  late StreamSubscription<List<PurchaseDetails>> _subscription;
+  List<ProductDetails> _products = <ProductDetails>[];
+
+  final _productIdList = [
+    '100_coins_india_quiz',
+    '500_coins_india_quiz',
+    '1500_coins_india_quiz',
+    '3000_coins_india_quiz',
+    '10_hearts_india_quiz',
+    '50_hearts_india_quiz',
+    '150_hearts_india_quiz',
+    '300_hearts_india_quiz',
+  ];
+
+  String? _queryProductError = "";
+  bool _isAvailable = false;
+  List<String> _notFoundIds = <String>[];
+  bool _loading = true;
+  bool _purchasePending = false;
+  List currentValue = ["null", 0];
+
   @override
   void initState() {
-    super.initState();
+    final Stream<List<PurchaseDetails>> purchaseUpdated =
+        _inAppPurchase.purchaseStream;
+    _subscription = purchaseUpdated.listen((purchaseDetailsList) {
+      _listenToPurchaseUpdated(purchaseDetailsList);
+    }, onDone: () {
+      _subscription.cancel();
+    }, onError: (Object e) {
+      debugPrint("error :${e.toString()}");
+    });
     loadAd();
+    initStoreInfo();
+    checkInternetConnection();
+    super.initState();
+  }
+
+  Future<void> checkInternetConnection() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    setState(() {
+      hasInternet = connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi;
+    });
+  }
+
+  Future<void> initStoreInfo() async {
+    final bool isAvailable = await _inAppPurchase.isAvailable();
+    if (!isAvailable) {
+      setState(() {
+        _isAvailable = isAvailable;
+        _products = <ProductDetails>[];
+        _notFoundIds = <String>[];
+        _loading = false;
+      });
+      return;
+    }
+
+    final ProductDetailsResponse productDetailResponse =
+        await _inAppPurchase.queryProductDetails(_productIdList.toSet());
+    print(productDetailResponse.error);
+    if (productDetailResponse.error != null) {
+      setState(() {
+        _queryProductError = productDetailResponse.error!.message;
+        _isAvailable = isAvailable;
+        _products = productDetailResponse.productDetails;
+        _notFoundIds = productDetailResponse.notFoundIDs;
+        print('_notFoundIds :: ${_notFoundIds.toList()}');
+        _loading = false;
+      });
+      print("Products added");
+      return;
+    }
+
+    if (productDetailResponse.productDetails.isEmpty) {
+      setState(() {
+        _queryProductError = null;
+        _isAvailable = isAvailable;
+        _products = productDetailResponse.productDetails;
+        _notFoundIds = productDetailResponse.notFoundIDs;
+        print("Products details empty");
+        print('_notFoundIds : ${_notFoundIds.toList()}');
+        print('productDetailResponse error :: ${productDetailResponse.error}');
+        _loading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _products = productDetailResponse.productDetails;
+      _notFoundIds = productDetailResponse.notFoundIDs;
+      _isAvailable = isAvailable;
+      print('_notFoundIds error : ${_notFoundIds.toList()}');
+      _loading = false;
+    });
+  }
+
+  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
+    print("Listening....");
+    purchaseDetailsList.forEach((purchaseDetails) async {
+      final value = Provider.of<PurchaseValueProvider>(context, listen: false);
+      final hearts = Provider.of<HeartProvider>(context, listen: false);
+      final coins = Provider.of<CoinProvider>(context, listen: false);
+      if (purchaseDetails.status == PurchaseStatus.pending) {
+        value.setPurchasePending(true);
+        setState(() {
+          _purchasePending = true;
+        });
+      } else {
+        setState(() {
+          _purchasePending = false;
+        });
+        if (purchaseDetails.status == PurchaseStatus.error) {
+          value.setPurchasePending(false);
+          showSnackBar('Purchase Error');
+        } else if (purchaseDetails.status == PurchaseStatus.purchased) {
+          value.setPurchasePending(false);
+          bool validPurchase = await _verifyPurchase(purchaseDetails);
+          if (validPurchase) {
+            if (value.itemName == "Coins") {
+              coins.addCoin(value.currentValue);
+            }
+            if (value.itemName == "Hearts") {
+              hearts.addHearts(value.currentValue);
+            }
+            await _inAppPurchase.completePurchase(purchaseDetails);
+          } else {
+            showSnackBar('Invalid Purchase');
+            await _inAppPurchase.completePurchase(purchaseDetails);
+          }
+        }
+      }
+    });
+  }
+
+  Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) async {
+// TODO: Implement server-side validation of the purchase.
+    return true;
+  }
+
+  void showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(milliseconds: 1500),
+      ),
+    );
   }
 
   @override
   void dispose() {
+    _subscription.cancel();
     _rewardedAd.dispose();
     super.dispose();
   }
@@ -76,284 +220,325 @@ class _StoreScreenState extends State<StoreScreen> {
     final heartProvider = Provider.of<HeartProvider>(context, listen: false);
     final adsWatched = Provider.of<DailyLoginProvider>(context, listen: false);
     final musicPlayer = Provider.of<UtilsProvider>(context, listen: false);
+    final value = Provider.of<PurchaseValueProvider>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Store'),
         actions: const [AppBarActions()],
       ),
+      bottomSheet: value.purchasePending ? const BottomSheet() : null,
       body: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.only(bottom: 30),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.deepPurple,
-                Colors.purple,
-              ],
-            ),
-          ),
-          child: Column(
-            children: [
-              if (_isRewardedAdLoaded && adsWatched.adsWatched < 5)
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 26),
-                    const Text(
-                      'FREE',
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+          child: hasInternet
+              ? Container(
+                  padding: const EdgeInsets.only(bottom: 30),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.deepPurple,
+                        Colors.purple,
+                      ],
                     ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          _BuyItem(
-                            value: 5,
-                            price: 1,
-                            icon: Icons.monetization_on,
-                            title: "5 coins",
-                            btnText: "Watch Ad",
-                            onClick: () {
-                              if (musicPlayer.isMusicTurnedOn) {
-                                musicPlayer.musicPlayingFalse();
-                              }
-                              _rewardedAd.show(
-                                onUserEarnedReward: (ad, reward) {
-                                  coinsprovider.addCoin(5);
-                                  adsWatched.increaseAdsWatched();
-                                  setState(() {
-                                    _isRewardedAdLoaded = false;
-                                  });
+                  ),
+                  child: Column(
+                    children: [
+                      if (_isRewardedAdLoaded && adsWatched.adsWatched < 5)
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 26),
+                            const Text(
+                              'FREE',
+                              style: TextStyle(
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  _BuyItem(
+                                    icon: Icons.monetization_on,
+                                    title: "5 coins",
+                                    btnText: "Watch Ad",
+                                    onClick: () {
+                                      if (musicPlayer.isMusicTurnedOn) {
+                                        musicPlayer.musicPlayingFalse();
+                                      }
+                                      _rewardedAd.show(
+                                        onUserEarnedReward: (ad, reward) {
+                                          coinsprovider.addCoin(5);
+                                          adsWatched.increaseAdsWatched();
+                                          setState(() {
+                                            _isRewardedAdLoaded = false;
+                                          });
 
-                                  if (musicPlayer.isMusicTurnedOn) {
-                                    musicPlayer.musicPlayingTrue();
-                                  }
-                                  loadAd();
-                                },
-                              );
-                            },
-                          ),
-                          _BuyItem(
-                            value: 1,
-                            price: 1,
-                            icon: Icons.favorite,
-                            title: "1 heart",
-                            btnText: "Watch Ad",
-                            onClick: () {
-                              if (musicPlayer.isMusicTurnedOn) {
-                                musicPlayer.musicPlayingFalse();
-                              }
-                              _rewardedAd.show(
-                                onUserEarnedReward: (ad, reward) {
-                                  heartProvider.addHeart(1);
-                                  adsWatched.increaseAdsWatched();
-                                  setState(() {
-                                    _isRewardedAdLoaded = false;
-                                  });
-                                  if (musicPlayer.isMusicTurnedOn) {
-                                    musicPlayer.musicPlayingTrue();
-                                  }
-                                  loadAd();
-                                },
-                              );
-                            },
-                          ),
-                        ],
+                                          if (musicPlayer.isMusicTurnedOn) {
+                                            musicPlayer.musicPlayingTrue();
+                                          }
+                                          loadAd();
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  _BuyItem(
+                                    icon: Icons.favorite,
+                                    title: "1 heart",
+                                    btnText: "Watch Ad",
+                                    onClick: () {
+                                      if (musicPlayer.isMusicTurnedOn) {
+                                        musicPlayer.musicPlayingFalse();
+                                      }
+                                      _rewardedAd.show(
+                                        onUserEarnedReward: (ad, reward) {
+                                          heartProvider.addHeart(1);
+                                          adsWatched.increaseAdsWatched();
+                                          setState(() {
+                                            _isRewardedAdLoaded = false;
+                                          });
+                                          if (musicPlayer.isMusicTurnedOn) {
+                                            musicPlayer.musicPlayingTrue();
+                                          }
+                                          loadAd();
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      const SizedBox(height: 26),
+                      const Text(
+                        'Buy Coins',
+                        style: TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              const BuyCoins(),
-            ],
-          ),
-        ),
-      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _BuyItem(
+                              priceText: _products[0].price,
+                              icon: Icons.monetization_on,
+                              title: "100 coins",
+                              btnText: "Buy",
+                              onClick: () async {
+                                value.setCurrentValue("Coins", 100);
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: _products[0]);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                            ),
+                            _BuyItem(
+                              priceText: _products[6].price,
+                              icon: Icons.monetization_on,
+                              title: "500 coins",
+                              btnText: "Buy",
+                              onClick: () async {
+                                value.setCurrentValue("Coins", 500);
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: _products[6]);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                            ),
+                            _BuyItem(
+                              priceText: _products[2].price,
+                              icon: Icons.monetization_on,
+                              title: "1500 coins",
+                              btnText: "Buy",
+                              onClick: () async {
+                                value.setCurrentValue("Coins", 1000);
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: _products[2]);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                            ),
+                            _BuyItem(
+                              priceText: _products[4].price,
+                              icon: Icons.monetization_on,
+                              title: "3000 coins",
+                              btnText: "Buy",
+                              onClick: () async {
+                                value.setCurrentValue("Coins", 3000);
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: _products[4]);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 26),
+                      const Text(
+                        'Buy Hearts',
+                        style: TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _BuyItem(
+                              icon: Icons.favorite,
+                              title: "10 Hearts",
+                              priceText: _products[1].price,
+                              btnText: "Buy",
+                              onClick: () async {
+                                value.setCurrentValue("Hearts", 10);
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: _products[1]);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                            ),
+                            _BuyItem(
+                              icon: Icons.favorite,
+                              title: "50 Hearts",
+                              priceText: _products[7].price,
+                              btnText: "Buy",
+                              onClick: () async {
+                                value.setCurrentValue("Hearts", 50);
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: _products[7]);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                            ),
+                            _BuyItem(
+                              icon: Icons.favorite,
+                              title: "150 Hearts",
+                              priceText: _products[3].price,
+                              btnText: "Buy",
+                              onClick: () async {
+                                value.setCurrentValue("Hearts", 150);
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: _products[3]);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                            ),
+                            _BuyItem(
+                              icon: Icons.favorite,
+                              title: "300 Hearts",
+                              priceText: _products[5].price,
+                              btnText: "Buy",
+                              onClick: () async {
+                                value.setCurrentValue("Hearts", 300);
+                                final PurchaseParam purchaseParam =
+                                    PurchaseParam(productDetails: _products[5]);
+                                _inAppPurchase.buyConsumable(
+                                    purchaseParam:
+                                        purchaseParam); //buyNonConsumable to buy non-consumable products
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : const Padding(
+                  padding: EdgeInsets.only(top: 200),
+                  child: Center(
+                      child: Text("Internet connection is required!",
+                          style: TextStyle(color: Colors.red))),
+                )),
     );
   }
 }
 
-class BuyCoins extends StatelessWidget {
-  const BuyCoins({
+class BottomSheet extends StatelessWidget {
+  const BottomSheet({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    void handleBuyCoins() {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Coming Soon!"),
-            content: const Text("This feature is coming soon."),
-            actions: [
-              TextButton(
-                child: const Text("OK"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    void handleBuyHearts() {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Coming Soon!"),
-            content: const Text("This feature is coming soon."),
-            actions: [
-              TextButton(
-                child: const Text("OK"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: _BuyItem(
-            value: 1,
-            price: 2,
-            icon: Icons.highlight_remove,
-            title: 'Remove Ads',
-            priceText: '2',
-            btnText: 'Buy Now',
-            onClick: handleBuyCoins,
-          ),
+    return Container(
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
-        const SizedBox(height: 26),
-        const Text(
-          'Buy Coins',
-          style: TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+          const Text(
+            'Processing Your Purchase...',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _BuyItem(
-                value: 100,
-                price: 1,
-                icon: Icons.monetization_on,
-                title: "100 coins",
-                priceText: "1",
-                onClick: handleBuyCoins,
-              ),
-              _BuyItem(
-                value: 500,
-                price: 4,
-                icon: Icons.monetization_on,
-                title: "500 coins",
-                priceText: "4",
-                onClick: handleBuyCoins,
-              ),
-              _BuyItem(
-                value: 1500,
-                price: 10,
-                icon: Icons.monetization_on,
-                title: "1500 coins",
-                priceText: "10",
-                onClick: handleBuyCoins,
-              ),
-              _BuyItem(
-                value: 3000,
-                price: 15,
-                icon: Icons.monetization_on,
-                title: "3000 coins",
-                priceText: "15",
-                onClick: handleBuyCoins,
-              ),
-            ],
+          const SizedBox(height: 10),
+          Divider(
+            color: Colors.grey[400],
+            thickness: 2,
+            indent: 50,
+            endIndent: 50,
           ),
-        ),
-        const SizedBox(height: 26),
-        const Text(
-          'Buy Hearts',
-          style: TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+          const SizedBox(height: 20),
+          Container(
+            height: 100,
+            width: 100,
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).primaryColor,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _BuyItem(
-                value: 10,
-                price: 1,
-                icon: Icons.favorite,
-                title: "10 hearts",
-                priceText: "1",
-                onClick: handleBuyHearts,
-              ),
-              _BuyItem(
-                value: 50,
-                price: 4,
-                icon: Icons.favorite,
-                title: "50 hearts",
-                priceText: "4",
-                onClick: handleBuyHearts,
-              ),
-              _BuyItem(
-                value: 150,
-                price: 10,
-                icon: Icons.favorite,
-                title: "150 hearts",
-                priceText: "10",
-                onClick: handleBuyHearts,
-              ),
-              _BuyItem(
-                value: 300,
-                price: 15,
-                icon: Icons.favorite,
-                title: "300 hearts",
-                priceText: "15",
-                onClick: handleBuyHearts,
-              ),
-            ],
+          const SizedBox(height: 20),
+          Text(
+            'Please do not close the app or go back while your purchase is being processed.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 16,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
 class _BuyItem extends StatelessWidget {
-  final int value;
-  final int price;
   final String? priceText;
   final IconData icon;
   final String title;
@@ -362,8 +547,6 @@ class _BuyItem extends StatelessWidget {
 
   const _BuyItem({
     Key? key,
-    required this.value,
-    required this.price,
     required this.icon,
     this.priceText,
     required this.title,
@@ -402,7 +585,7 @@ class _BuyItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    (priceText != null ? '\$$priceText' : "FREE"),
+                    (priceText != null ? '$priceText' : "FREE"),
                     style: const TextStyle(
                       fontSize: 16,
                       color: Colors.grey,

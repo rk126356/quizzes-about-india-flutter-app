@@ -2,7 +2,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:riddle/providers/answer_streak_provider.dart';
-import 'package:riddle/providers/coin_provider.dart';
 import 'package:translator/translator.dart';
 
 import '../providers/questions_language_provider.dart';

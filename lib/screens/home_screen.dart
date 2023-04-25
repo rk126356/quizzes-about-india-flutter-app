@@ -12,6 +12,8 @@ import 'package:riddle/screens/settings_screen.dart';
 import 'package:riddle/screens/store_screen.dart';
 import 'package:riddle/screens/test_store.dart';
 import 'package:riddle/widgets/daily_login_model_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/purchase_value_provider.dart';
 import '../widgets/admob/banner_ads_widget.dart';
 import '../widgets/appbar_actions_widget.dart';
 import '../widgets/custom_button_widget.dart';
@@ -30,6 +32,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     checkInternetConnection();
+    // clearSharedData();
+  }
+
+  void clearSharedData() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.clear();
   }
 
   Future<void> checkInternetConnection() async {
@@ -73,7 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         );
 
-    final languageProvider = Provider.of<QuestionsLanguageProvider>(context);
+    final languageProvider =
+        Provider.of<QuestionsLanguageProvider>(context, listen: false);
 
     void openLanguagePickerDialog() {
       showDialog(
@@ -125,6 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemBuilder: buildDialogItem)),
       );
     }
+
+    final value = Provider.of<PurchaseValueProvider>(context);
 
     return Scaffold(
       bottomNavigationBar: kIsWeb
@@ -178,10 +189,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 route: PlayScreen(),
               ),
               const SizedBox(height: 16.0),
-              const CustomButton(
-                label: 'Store',
+              CustomButton(
+                label: value.purchasePending ? "Pending..." : "Store",
                 icon: Icons.shop,
-                route: TestStore(),
+                route: StoreScreen(),
               ),
               const SizedBox(height: 16.0),
               ElevatedButton.icon(
