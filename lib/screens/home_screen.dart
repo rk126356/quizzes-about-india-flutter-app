@@ -10,7 +10,6 @@ import 'package:riddle/providers/questions_language_provider.dart';
 import 'package:riddle/screens/play_screen.dart';
 import 'package:riddle/screens/settings_screen.dart';
 import 'package:riddle/screens/store_screen.dart';
-import 'package:riddle/screens/test_store.dart';
 import 'package:riddle/widgets/daily_login_model_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/purchase_value_provider.dart';
@@ -190,9 +189,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 16.0),
               CustomButton(
-                label: value.purchasePending ? "Pending..." : "Store",
+                label: value.purchasePending
+                    ? "Pending...\nPlease go back"
+                    : "Store",
                 icon: Icons.shop,
-                route: StoreScreen(),
+                route: const StoreScreen(),
               ),
               const SizedBox(height: 16.0),
               ElevatedButton.icon(

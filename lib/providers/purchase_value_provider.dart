@@ -37,10 +37,6 @@ class PurchaseValueProvider with ChangeNotifier {
     if (storedItemName != null) {
       _itemName = storedItemName;
     }
-    final storedPurchasePending = prefs.getBool("purchasePending");
-    if (storedPurchasePending != null) {
-      _purchasePending = storedPurchasePending;
-    }
     notifyListeners();
   }
 
@@ -48,6 +44,5 @@ class PurchaseValueProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('itemValue', _currentValue);
     await prefs.setString('itemName', _itemName);
-    await prefs.setBool('purchasePending', _purchasePending);
   }
 }

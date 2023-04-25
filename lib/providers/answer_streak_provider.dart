@@ -30,7 +30,6 @@ class AnswerStreakProvider with ChangeNotifier {
     _currentStrak = 0;
     Random random = Random();
     int rndm = random.nextInt(101);
-    print("Random num is $rndm");
 
     if (rndm < 35) {
       _nextReward = ["Coins", "10"];

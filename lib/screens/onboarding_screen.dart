@@ -29,6 +29,8 @@ class TestScreen extends StatelessWidget {
     ),
   ];
 
+  TestScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final dailyLogin = Provider.of<DailyLoginProvider>(context);

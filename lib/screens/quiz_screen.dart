@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:riddle/models/questions_model.dart';
@@ -458,7 +459,9 @@ class _QuizScreenState extends State<QuizScreen> {
           });
         },
         onAdFailedToLoad: (err) {
-          print(err);
+          if (kDebugMode) {
+            print(err);
+          }
           setState(() {
             _isRewardedAdLoaded = false;
           });

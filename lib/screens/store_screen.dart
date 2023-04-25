@@ -54,6 +54,7 @@ class _StoreScreenState extends State<StoreScreen> {
   @override
   void initState() {
     super.initState();
+
     final Stream<List<PurchaseDetails>> purchaseUpdated =
         _inAppPurchase.purchaseStream;
     _subscription = purchaseUpdated.listen((purchaseDetailsList) {
@@ -63,9 +64,11 @@ class _StoreScreenState extends State<StoreScreen> {
     }, onError: (Object e) {
       debugPrint("error :${e.toString()}");
     });
-    loadAd();
+
     initStoreInfo();
+
     checkInternetConnection();
+    loadAd();
   }
 
   Future<void> checkInternetConnection() async {
@@ -127,6 +130,8 @@ class _StoreScreenState extends State<StoreScreen> {
 
   void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
     print("Listening....");
+    print(purchaseDetailsList[0].productID);
+
     purchaseDetailsList.forEach((purchaseDetails) async {
       final value = Provider.of<PurchaseValueProvider>(context, listen: false);
       final hearts = Provider.of<HeartProvider>(context, listen: false);
@@ -512,7 +517,7 @@ class BottomSheet extends StatelessWidget {
             endIndent: 50,
           ),
           const SizedBox(height: 20),
-          Container(
+          SizedBox(
             height: 100,
             width: 100,
             child: CircularProgressIndicator(
@@ -522,12 +527,15 @@ class BottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text(
-            'Please do not close the app or go back while your purchase is being processed.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16,
+          Padding(
+            padding: const EdgeInsets.all(22.0),
+            child: Text(
+              'Please do not close the app or go back while your purchase is being processed.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.red[600],
+                fontSize: 16,
+              ),
             ),
           ),
         ],
