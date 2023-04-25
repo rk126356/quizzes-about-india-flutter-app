@@ -53,6 +53,7 @@ class _StoreScreenState extends State<StoreScreen> {
 
   @override
   void initState() {
+    super.initState();
     final Stream<List<PurchaseDetails>> purchaseUpdated =
         _inAppPurchase.purchaseStream;
     _subscription = purchaseUpdated.listen((purchaseDetailsList) {
@@ -65,7 +66,6 @@ class _StoreScreenState extends State<StoreScreen> {
     loadAd();
     initStoreInfo();
     checkInternetConnection();
-    super.initState();
   }
 
   Future<void> checkInternetConnection() async {
@@ -90,7 +90,6 @@ class _StoreScreenState extends State<StoreScreen> {
 
     final ProductDetailsResponse productDetailResponse =
         await _inAppPurchase.queryProductDetails(_productIdList.toSet());
-    print(productDetailResponse.error);
     if (productDetailResponse.error != null) {
       setState(() {
         _queryProductError = productDetailResponse.error!.message;
@@ -100,7 +99,6 @@ class _StoreScreenState extends State<StoreScreen> {
         print('_notFoundIds :: ${_notFoundIds.toList()}');
         _loading = false;
       });
-      print("Products added");
       return;
     }
 
