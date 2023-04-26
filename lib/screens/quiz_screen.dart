@@ -11,6 +11,7 @@ import '../providers/answer_streak_provider.dart';
 import '../providers/daily_login_provider.dart';
 import '../providers/heart_provider.dart';
 import '../providers/questions_provider.dart';
+import '../utils/randomize_index_number.dart';
 import '../widgets/appbar_actions_widget.dart';
 import '../widgets/choice_button_widget.dart';
 import '../widgets/correct_answer_model_widget.dart';
@@ -595,7 +596,7 @@ class _QuizScreenState extends State<QuizScreen> {
           children: [
             SingleChildScrollView(
               child: Container(
-                height: MediaQuery.of(context).size.height,
+                height: 1200,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,

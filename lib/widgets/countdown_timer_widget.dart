@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -48,7 +49,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
         if (_timeRemaining > 0) {
           _timeRemaining--;
         } else {
-          timer!.cancel();
+          timer.cancel();
           widget.onFinished();
         }
       });
@@ -65,7 +66,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
         if (_timeRemaining > 0) {
           _timeRemaining--;
         } else {
-          timer!.cancel();
+          timer.cancel();
           widget.onFinished();
         }
       });
@@ -91,7 +92,9 @@ class _CountdownTimerState extends State<CountdownTimer> {
           });
         },
         onAdFailedToLoad: (err) {
-          print(err);
+          if (kDebugMode) {
+            print(err);
+          }
           setState(() {
             _isRewardedAdLoaded = false;
           });
