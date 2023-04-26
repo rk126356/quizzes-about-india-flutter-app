@@ -28,8 +28,8 @@ class _StoreScreenState extends State<StoreScreen> {
   bool hasInternet = false;
 
   final String _adUnitId = Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/5224354917' // replace with your actual Ad Unit ID for Android
-      : 'ca-app-pub-3940256099942544/5224354917'; // replace with your actual Ad Unit ID for iOS
+      ? 'ca-app-pub-3442981380712673/1082598831' // replace with your actual Ad Unit ID for Android
+      : 'ca-app-pub-3442981380712673/1082598831'; // replace with your actual Ad Unit ID for iOS
 
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
   late StreamSubscription<List<PurchaseDetails>> _subscription;

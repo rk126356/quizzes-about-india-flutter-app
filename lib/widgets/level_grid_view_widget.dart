@@ -27,8 +27,8 @@ class _LevelGridViewState extends State<LevelGridView>
   bool _isInterstitialAdLoaded = false;
 
   final String _adUnitId = Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/1033173712' // replace with your actual Ad Unit ID for Android
-      : 'ca-app-pub-3940256099942544/1033173712'; // replace with your actual Ad Unit ID for iOS
+      ? 'ca-app-pub-3442981380712673/2669306384' // replace with your actual Ad Unit ID for Android
+      : 'ca-app-pub-3442981380712673/2669306384'; // replace with your actual Ad Unit ID for iOS
 
   @override
   void initState() {

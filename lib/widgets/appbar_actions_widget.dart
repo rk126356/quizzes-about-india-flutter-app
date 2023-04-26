@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:riddle/providers/daily_login_provider.dart';
+import 'package:riddle/screens/store_screen.dart';
 
 import '../providers/coin_provider.dart';
 import '../providers/heart_provider.dart';
@@ -53,8 +54,10 @@ class AppBarActions extends StatelessWidget {
   Widget _buildCoinBox(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        final coinsprovider = Provider.of<CoinProvider>(context, listen: false);
-        coinsprovider.addCoin(100);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const StoreScreen()),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(7.0),
@@ -99,9 +102,10 @@ class AppBarActions extends StatelessWidget {
     final dailyLogin = Provider.of<DailyLoginProvider>(context);
     return GestureDetector(
       onTap: () {
-        final heartProvider =
-            Provider.of<HeartProvider>(context, listen: false);
-        heartProvider.addHeart(1);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const StoreScreen()),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(7.0),

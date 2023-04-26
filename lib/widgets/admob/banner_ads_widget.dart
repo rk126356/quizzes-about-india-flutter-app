@@ -19,8 +19,8 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
   bool _isBannerAdReady = false;
   final AdSize _adSize = AdSize.banner;
   final String _adUnitId = Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/6300978111' // replace with your actual Ad Unit ID for Android
-      : 'ca-app-pub-3940256099942544/2934735716'; // replace with your actual Ad Unit ID for iOS
+      ? 'ca-app-pub-3442981380712673/3763349487' // replace with your actual Ad Unit ID for Android
+      : 'ca-app-pub-3442981380712673/3763349487'; // replace with your actual Ad Unit ID for iOS
 
   @override
   void initState() {
