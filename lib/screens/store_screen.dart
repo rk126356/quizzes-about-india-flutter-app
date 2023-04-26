@@ -12,6 +12,7 @@ import '../providers/daily_login_provider.dart';
 import '../providers/purchase_value_provider.dart';
 import '../providers/utils_provider.dart';
 import '../widgets/appbar_actions_widget.dart';
+import '../widgets/hint_answer_model_widget.dart';
 
 class StoreScreen extends StatefulWidget {
   const StoreScreen({Key? key}) : super(key: key);
@@ -111,9 +112,6 @@ class _StoreScreenState extends State<StoreScreen> {
         _isAvailable = isAvailable;
         _products = productDetailResponse.productDetails;
         _notFoundIds = productDetailResponse.notFoundIDs;
-        print("Products details empty");
-        print('_notFoundIds : ${_notFoundIds.toList()}');
-        print('productDetailResponse error :: ${productDetailResponse.error}');
         _loading = false;
       });
       return;
@@ -123,33 +121,30 @@ class _StoreScreenState extends State<StoreScreen> {
       _products = productDetailResponse.productDetails;
       _notFoundIds = productDetailResponse.notFoundIDs;
       _isAvailable = isAvailable;
-      print('_notFoundIds error : ${_notFoundIds.toList()}');
       _loading = false;
     });
   }
 
   void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
-    print("Listening....");
-    print(purchaseDetailsList[0].productID);
-
     purchaseDetailsList.forEach((purchaseDetails) async {
       final value = Provider.of<PurchaseValueProvider>(context, listen: false);
       final hearts = Provider.of<HeartProvider>(context, listen: false);
       final coins = Provider.of<CoinProvider>(context, listen: false);
+      final adsWatched =
+          Provider.of<DailyLoginProvider>(context, listen: false);
       if (purchaseDetails.status == PurchaseStatus.pending) {
         value.setPurchasePending(true);
         setState(() {
           _purchasePending = true;
         });
       } else {
+        value.setPurchasePending(false);
         setState(() {
           _purchasePending = false;
         });
         if (purchaseDetails.status == PurchaseStatus.error) {
-          value.setPurchasePending(false);
           showSnackBar('Purchase Error');
         } else if (purchaseDetails.status == PurchaseStatus.purchased) {
-          value.setPurchasePending(false);
           bool validPurchase = await _verifyPurchase(purchaseDetails);
           if (validPurchase) {
             if (value.itemName == "Coins") {
@@ -158,6 +153,23 @@ class _StoreScreenState extends State<StoreScreen> {
             if (value.itemName == "Hearts") {
               hearts.addHearts(value.currentValue);
             }
+            adsWatched.changeShouldShowAds(false);
+            // ignore: use_build_context_synchronously
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return HintAnswerScreen(
+                  onNext: () {
+                    Navigator.pop(context);
+                  },
+                  explanation: 'You have successfully completed the purchase.',
+                  title: value.itemName == "Hearts"
+                      ? 'WoW ❤+${value.currentValue}'
+                      : 'WoW 💰+${value.currentValue}',
+                  btnTitle: 'Nice!',
+                );
+              },
+            );
             await _inAppPurchase.completePurchase(purchaseDetails);
           } else {
             showSnackBar('Invalid Purchase');
@@ -329,6 +341,14 @@ class _StoreScreenState extends State<StoreScreen> {
                           color: Colors.white,
                         ),
                       ),
+                      if (adsWatched.shouldShowAds)
+                        const Text(
+                          'ADS will be removed with any purchase',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.white,
+                          ),
+                        ),
                       const SizedBox(height: 10),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -404,6 +424,14 @@ class _StoreScreenState extends State<StoreScreen> {
                           color: Colors.white,
                         ),
                       ),
+                      if (adsWatched.shouldShowAds)
+                        const Text(
+                          'ADS will be removed with any purchase',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.white,
+                          ),
+                        ),
                       const SizedBox(height: 10),
                       Padding(
                         padding: const EdgeInsets.all(8.0),

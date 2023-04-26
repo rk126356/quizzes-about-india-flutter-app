@@ -618,7 +618,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           height: MediaQuery.of(context).size.height * 0.02),
                       Center(
                         child: CountdownTimer(
-                          duration: 120,
+                          duration: 150,
                           onFinished: () {
                             if (music.isSounsPlaying) {
                               final player = AudioPlayer();

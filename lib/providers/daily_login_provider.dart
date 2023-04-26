@@ -10,6 +10,9 @@ class DailyLoginProvider with ChangeNotifier {
   int _adsWatched = 0;
   int get adsWatched => _adsWatched;
 
+  bool _shouldShowAds = true;
+  bool get shouldShowAds => _shouldShowAds;
+
   Duration _timeLeft = Duration.zero;
   Duration get timeLeft => _timeLeft;
 
@@ -18,6 +21,12 @@ class DailyLoginProvider with ChangeNotifier {
 
   DailyLoginProvider() {
     _initSharedPreferences();
+  }
+
+  void changeShouldShowAds(bool shouldShowAds) {
+    _shouldShowAds = shouldShowAds;
+    _saveAdsWatched();
+    notifyListeners();
   }
 
   void increaseAdsWatched() {
@@ -77,10 +86,15 @@ class DailyLoginProvider with ChangeNotifier {
     if (adsWatchedPrefix != null) {
       _adsWatched = adsWatchedPrefix;
     }
+    final shouldShowAds = _prefs?.getBool('shouldShowAds');
+    if (shouldShowAds != null) {
+      _shouldShowAds = shouldShowAds;
+    }
   }
 
   Future<void> _saveAdsWatched() async {
     await _prefs?.setInt('adsWatched', _adsWatched);
+    await _prefs?.setBool('shouldShowAds', _shouldShowAds);
   }
 
   void _startTimer() {

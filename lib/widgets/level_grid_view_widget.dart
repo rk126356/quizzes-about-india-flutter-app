@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import 'package:riddle/providers/daily_login_provider.dart';
 import '../models/questions_model.dart';
 import '../providers/heart_provider.dart';
 import '../screens/quiz_screen.dart';
 import 'heart_unavailable_model_widget.dart';
 import 'hint_answer_model_widget.dart';
+import 'dart:io' show Platform;
 
 class LevelGridView extends StatefulWidget {
   final List<List<Question>> levels;
@@ -20,6 +23,12 @@ class _LevelGridViewState extends State<LevelGridView>
   late AnimationController _controller;
   late Animation<double> _animation;
   late ScrollController _scrollController;
+  InterstitialAd? _interstitialAd;
+  bool _isInterstitialAdLoaded = false;
+
+  final String _adUnitId = Platform.isAndroid
+      ? 'ca-app-pub-3940256099942544/1033173712' // replace with your actual Ad Unit ID for Android
+      : 'ca-app-pub-3940256099942544/1033173712'; // replace with your actual Ad Unit ID for iOS
 
   @override
   void initState() {
@@ -34,16 +43,33 @@ class _LevelGridViewState extends State<LevelGridView>
       ..addListener(() {
         setState(() {});
       });
-
     _controller.forward();
-
     _scrollController = ScrollController();
+    loadAd();
+  }
+
+  void loadAd() {
+    InterstitialAd.load(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (InterstitialAd ad) {
+          _interstitialAd = ad;
+          _isInterstitialAdLoaded = true;
+        },
+        onAdFailedToLoad: (LoadAdError error) {
+          _isInterstitialAdLoaded = false;
+          _interstitialAd!.dispose();
+        },
+      ),
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    _interstitialAd!.dispose();
     super.dispose();
   }
 
@@ -103,6 +129,8 @@ class _LevelGridViewState extends State<LevelGridView>
                 onTap: () {
                   final heartProvider =
                       Provider.of<HeartProvider>(context, listen: false);
+                  final ads =
+                      Provider.of<DailyLoginProvider>(context, listen: false);
 
                   if (heartProvider.hearts <= 0) {
                     showDialog(
@@ -128,6 +156,10 @@ class _LevelGridViewState extends State<LevelGridView>
                         },
                       );
                     } else {
+                      if (_isInterstitialAdLoaded && ads.shouldShowAds) {
+                        _interstitialAd!.show();
+                      }
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(

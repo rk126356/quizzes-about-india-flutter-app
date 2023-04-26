@@ -2,6 +2,9 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:provider/provider.dart';
+
+import '../../providers/daily_login_provider.dart';
 
 class BannerAdWidget extends StatefulWidget {
   const BannerAdWidget({Key? key}) : super(key: key);
@@ -49,16 +52,18 @@ class _BannerAdWidgetState extends State<BannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final ads = Provider.of<DailyLoginProvider>(context, listen: false);
     return SizedBox(
       height: _isBannerAdReady ? _adSize.height.toDouble() : 0,
       child: Center(
-        child: _isBannerAdReady && !kIsWeb
-            ? AdWidget(ad: _bannerAd)
-            : const CircularProgressIndicator(
-                color: Colors.green,
-                backgroundColor: Colors.black,
-              ),
-      ),
+          child: ads.shouldShowAds
+              ? _isBannerAdReady && !kIsWeb
+                  ? AdWidget(ad: _bannerAd)
+                  : const CircularProgressIndicator(
+                      color: Colors.green,
+                      backgroundColor: Colors.black,
+                    )
+              : const Text("Thanks for your support, all ads removed.")),
     );
   }
 }

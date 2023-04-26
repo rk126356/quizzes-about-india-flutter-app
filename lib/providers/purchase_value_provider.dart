@@ -5,17 +5,25 @@ class PurchaseValueProvider with ChangeNotifier {
   int _currentValue = 0;
   String _itemName = "";
   bool _purchasePending = false;
+  String _savedPurchaseDetails = "";
 
   PurchaseValueProvider() {
-    // _loadFromPrefs();
+    _loadFromPrefs();
   }
 
   int get currentValue => _currentValue;
   String get itemName => _itemName;
   bool get purchasePending => _purchasePending;
+  String get savedPurchaseDetails => _savedPurchaseDetails;
 
   void setPurchasePending(bool purchasePending) {
     _purchasePending = purchasePending;
+    // _saveToPrefs();
+    notifyListeners();
+  }
+
+  void savePurchaseDetails(String savedPurchaseDetails) {
+    _savedPurchaseDetails = savedPurchaseDetails;
     // _saveToPrefs();
     notifyListeners();
   }
@@ -28,15 +36,20 @@ class PurchaseValueProvider with ChangeNotifier {
   }
 
   Future<void> _loadFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedValue = prefs.getInt("itemValue");
-    if (storedValue != null) {
-      _currentValue = storedValue;
-    }
-    final storedItemName = prefs.getString("itemName");
-    if (storedItemName != null) {
-      _itemName = storedItemName;
-    }
+    // final prefs = await SharedPreferences.getInstance();
+    // final storedValue = prefs.getInt("itemValue");
+    // if (storedValue != null) {
+    //   _currentValue = storedValue;
+    // }
+    // final storedItemName = prefs.getString("itemName");
+    // if (storedItemName != null) {
+    //   _itemName = storedItemName;
+    // }
+    // final storedPurchasePending = prefs.getBool("purchasePending");
+    // if (storedPurchasePending != null) {
+    //   _purchasePending = storedPurchasePending;
+    // }
+
     notifyListeners();
   }
 
@@ -44,5 +57,6 @@ class PurchaseValueProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('itemValue', _currentValue);
     await prefs.setString('itemName', _itemName);
+    await prefs.setBool('purchasePending', _purchasePending);
   }
 }
