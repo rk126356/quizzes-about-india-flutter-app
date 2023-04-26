@@ -397,7 +397,7 @@ class _StoreScreenState extends State<StoreScreen> {
                               title: "1500 coins",
                               btnText: "Buy",
                               onClick: () async {
-                                value.setCurrentValue("Coins", 1000);
+                                value.setCurrentValue("Coins", 1500);
                                 final PurchaseParam purchaseParam =
                                     PurchaseParam(productDetails: _products[2]);
                                 _inAppPurchase.buyConsumable(
