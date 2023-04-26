@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -128,10 +129,7 @@ class _StoreScreenState extends State<StoreScreen> {
   void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
     purchaseDetailsList.forEach((purchaseDetails) async {
       final value = Provider.of<PurchaseValueProvider>(context, listen: false);
-      final hearts = Provider.of<HeartProvider>(context, listen: false);
-      final coins = Provider.of<CoinProvider>(context, listen: false);
-      final adsWatched =
-          Provider.of<DailyLoginProvider>(context, listen: false);
+
       if (purchaseDetails.status == PurchaseStatus.pending) {
         value.setPurchasePending(true);
         setState(() {
@@ -145,8 +143,17 @@ class _StoreScreenState extends State<StoreScreen> {
         if (purchaseDetails.status == PurchaseStatus.error) {
           showSnackBar('Purchase Error');
         } else if (purchaseDetails.status == PurchaseStatus.purchased) {
+          final hearts = Provider.of<HeartProvider>(context, listen: false);
+          final coins = Provider.of<CoinProvider>(context, listen: false);
+          final adsWatched =
+              Provider.of<DailyLoginProvider>(context, listen: false);
+          final sound = Provider.of<UtilsProvider>(context, listen: false);
           bool validPurchase = await _verifyPurchase(purchaseDetails);
           if (validPurchase) {
+            if (sound.isSounsPlaying) {
+              final player = AudioPlayer();
+              player.play(AssetSource('audio/buy1.mp3'));
+            }
             if (value.itemName == "Coins") {
               coins.addCoin(value.currentValue);
             }

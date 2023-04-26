@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,6 @@ import '../providers/answer_streak_provider.dart';
 import '../providers/daily_login_provider.dart';
 import '../providers/heart_provider.dart';
 import '../providers/questions_provider.dart';
-import '../utils/randomize_index_number.dart';
 import '../widgets/appbar_actions_widget.dart';
 import '../widgets/choice_button_widget.dart';
 import '../widgets/correct_answer_model_widget.dart';

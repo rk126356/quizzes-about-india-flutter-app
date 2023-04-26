@@ -1527,5 +1527,28 @@ List<Question> questionsList = [
       hint:
           "Tilak mainly contributed through his newspaper ‘Kesari’, which motivated people to take part in the freedom struggle.",
       explanation:
-          "Lokmanya Tilak was called the Father of Indian Unrest as he proved how words play a role in challenging the establishments and inspiring the masses. Tilak mainly contributed through his newspaper ‘Kesari’, which motivated people to take part in the freedom struggle.")
+          "Lokmanya Tilak was called the Father of Indian Unrest as he proved how words play a role in challenging the establishments and inspiring the masses. Tilak mainly contributed through his newspaper ‘Kesari’, which motivated people to take part in the freedom struggle."),
+  Question(
+      question:
+          "Which Indian state is home to the largest number of tigers in the country?",
+      choices: [
+        "a) Madhya Pradesh",
+        "b) Uttarakhand",
+        "c) Karnataka",
+        "d) Rajasthan"
+      ],
+      answer: "a) Madhya Pradesh",
+      hint:
+          "The state is also known for its Kanha and Bandhavgarh National Parks, which are popular tiger reserves in India.",
+      explanation:
+          "According to the 2018 tiger census, Madhya Pradesh has the highest number of tigers in India with a count of 526 tigers."),
+  Question(
+      question:
+          "What is the name of the ancient Indian system of medicine that originated around 5000 years ago?",
+      choices: ["a) Ayurveda", "b) Siddha", "c) Unani", "d) Naturopathy"],
+      answer: "a) Ayurveda",
+      hint:
+          "It is based on the belief that health and wellness depend on a delicate balance between the mind, body, and spirit.",
+      explanation:
+          "Ayurveda is an ancient Indian system of medicine that originated around 5000 years ago. It is one of the oldest and most comprehensive systems of healthcare in the world and includes a range of practices such as herbal medicine, diet, meditation, and yoga.")
 ];
