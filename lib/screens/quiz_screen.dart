@@ -428,8 +428,8 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _isRewardedAdLoaded = false;
 
   final String _adUnitId = Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/5224354917' // replace with your actual Ad Unit ID for Android
-      : 'ca-app-pub-3940256099942544/5224354917'; // replace with your actual Ad Unit ID for iOS
+      ? 'ca-app-pub-3442981380712673/1082598831' // replace with your actual Ad Unit ID for Android
+      : 'ca-app-pub-3442981380712673/1082598831'; // replace with your actual Ad Unit ID for iOS
 
   @override
   void initState() {
